@@ -1,0 +1,26 @@
+*.py[cod]
+
+# C extensions
+*.so
+
+# Installer logs
+pip-log.txt
+
+# Eclipse related
+.project
+.pydevproject
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Django specific
+*.log
+*.pot
+
+# Project specific
+.settings
