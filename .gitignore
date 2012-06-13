@@ -1,3 +1,6 @@
+# Ignore gedit tempfiles
+*~
+
 *.py[cod]
 
 # C extensions
