@@ -27,7 +27,10 @@ class DefaultSurgeon(NopSurgeon):
     
     def merge(self, receiver, donor):
         '''
-        Sets donor.is_active to false,
+        Sets donor.is_active to false.
+        
+        Iterates over given queryset and changes 'user_field' field value
+        to self.receiver. Calls save on each objects separately.
         '''
         donor.is_active = False
         donor.save()
