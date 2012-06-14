@@ -5,7 +5,9 @@ from views import TransplantMergeView
 
 urlpatterns = patterns('',
     url(r'^$',
-        login_required(TransplantMergeView.as_view()),
+        login_required(TransplantMergeView.as_view(
+            template_name='transplant/merge.html')
+        ),
         name='transplant_merge'
     ),
 )
