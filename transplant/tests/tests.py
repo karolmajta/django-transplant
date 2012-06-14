@@ -3,9 +3,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from mock import Mock
 
-from .models import TestModel, CustomUserFieldNameModel
+from django.core.exceptions import ImproperlyConfigured
 
+from .models import TestModel, CustomUserFieldNameModel
 from ..surgeons import NopSurgeon, DefaultSurgeon
+from ..surgery import Surgery
 
 class AppPropertiesTest(TestCase):
     
@@ -39,7 +41,7 @@ class NopSurgeonTest(TestCase):
     
     def testNopSurgeonShouldInitializeProperAttrs(self):
         s = NopSurgeon(TestModel.objects)
-        self.assertEquals(s.queryset, TestModel.objects)
+        self.assertEquals(s.manager, TestModel.objects)
     
     def testNopSurgeonShouldBeInitializedWithSomeKwargs(self):
         s1 = NopSurgeon(TestModel.objects)
@@ -74,7 +76,7 @@ class DefaultSurgeonTest(TestCase):
         self.assertTrue(self.receiver.is_active)
         self.assertFalse(self.donor.is_active)
     
-    def testMergeShouldSetUserOnAllObjectsFromQuerysetToReceiver(self):
+    def testMergeShouldSetUserOnAllObjectsFromManagerToReceiver(self):
         for i in range(0,10):
             u = self.receiver if i % 2 == 0 else self.donor
             TestModel(user=u).save()
@@ -92,7 +94,7 @@ class DefaultSurgeonTest(TestCase):
         for testmodel in CustomUserFieldNameModel.objects.all():
             self.assertEquals(self.receiver, testmodel.person)
     
-    def testMergeShouldCallSaveOnEachObjectInQueryset(self):
+    def testMergeShouldCallSaveOnEachObjectInManager(self):
         for _ in range(0,10):
             TestModel(user=self.receiver).save()
         mock_list = [Mock(obj) for obj in TestModel.objects.all()]
@@ -102,3 +104,62 @@ class DefaultSurgeonTest(TestCase):
         s.merge(self.receiver, self.donor)
         for mock in mock_list:
             mock.save.assert_called_with()
+
+class SurgeryTest(TestCase):
+
+    def testSplitPathShouldReturnTupleWithModuleAndClassname(self):
+        surgery = Surgery(
+          'transplant.tests.models.TestModel',
+          'transplant.surgeons.NopSurgeon'
+        )
+        result = surgery.split_path('module.path.ClassName')
+        self.assertEquals(('module.path', 'ClassName'), result)
+
+    def testProperManagerShouldBeSet(self):
+        surgery1 = Surgery(
+            'transplant.tests.models.TestModel',
+            'transplant.surgeons.NopSurgeon'
+        )
+        self.assertEquals(TestModel.objects, surgery1.manager)
+        
+        surgery2 = Surgery(
+            'transplant.tests.models.TestModel',
+            'transplant.surgeons.NopSurgeon',
+            **{'manager': 'other_manager'}
+        )
+        self.assertEquals(TestModel.other_manager, surgery2.manager)
+    
+    def testProperSurgeonShouldBeSet(self):
+        surgery1 = Surgery(
+            'transplant.tests.models.TestModel',
+            'transplant.surgeons.NopSurgeon',
+        )
+        self.assertEquals('NopSurgeon', surgery1.surgeon.__class__.__name__)
+        
+        surgery2 = Surgery(
+            'transplant.tests.models.TestModel',
+            'transplant.surgeons.DefaultSurgeon',
+        )
+        self.assertEquals('DefaultSurgeon', surgery2.surgeon.__class__.__name__)
+    
+    def testImproperlyConfiguredSouldBeRaisedIfModelCannotBeLoaded(self):
+        with self.assertRaises(ImproperlyConfigured):
+            surgery = Surgery(
+                'non.existing.Model',
+                'transplant.surgeons.NopSurgeon'
+            )
+    
+    def testImproperlyConfiguredShouldBeRaisedIfManagerDoesNotExtist(self):
+        with self.assertRaises(ImproperlyConfigured):
+            surgery = Surgery(
+                'transplant.tests.models.TestModel',
+                'transplant.surgeons.DefaultSurgeon',
+                **{'manager': 'so_wrong'}
+            )
+    
+    def testImproperlyConfiguredShouldBeRaisedIfSurgeonCannotBeLoaded(self):
+        with self.assertRaises(ImproperlyConfigured):
+            surgery = Surgery(
+                'transplant.tests.models.TestModel',
+                'non.existing.Surgeon'
+            )

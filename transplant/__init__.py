@@ -1,6 +1,8 @@
 __import__('transplant.settings')
 import sys
 
+from surgery import *
+
 # Import our defaults, project defaults, and project settings
 app_settings = sys.modules['transplant.settings']
 default_settings = sys.modules['django.conf.global_settings']
@@ -15,3 +17,5 @@ for name in dir(app_settings):
         # Add the value to the settings, if not already present
         if not hasattr(user_settings, name):
                 setattr(user_settings, name, getattr(default_settings, name))
+
+ 

@@ -1,6 +1,6 @@
 '''
 This module contains Surgeon classes. Surgeon objects perform operation on
-models' querysets and user instances when performing an account merge.
+models' managers and user instances when performing an account merge.
 '''
 
 class NopSurgeon:
@@ -8,9 +8,9 @@ class NopSurgeon:
     This is a surgeon class that performs a 'merge' by doing nothing
     (it leaves the database unchanged).
     '''
-    def __init__(self, queryset, user_field='user'):
+    def __init__(self, manager, user_field='user'):
         self.user_field = user_field
-        self.queryset = queryset
+        self.manager = manager
 
     def merge(self, receiver, donor):
         '''
@@ -21,7 +21,7 @@ class NopSurgeon:
 class DefaultSurgeon(NopSurgeon):
     '''
     This class merges two users by setting user (or a field given as
-    'user_field') to receiver on all objects in given queryset and calling
+    'user_field') to receiver on all objects in given manager and calling
     save() on each of them (so that all signals etc. are fired)
     '''
     
@@ -29,12 +29,12 @@ class DefaultSurgeon(NopSurgeon):
         '''
         Sets donor.is_active to false.
         
-        Iterates over given queryset and changes 'user_field' field value
+        Iterates over given manager and changes 'user_field' field value
         to self.receiver. Calls save on each objects separately.
         '''
         donor.is_active = False
         donor.save()
         
-        for obj in self.queryset.all():
+        for obj in self.manager.all():
             setattr(obj, self.user_field, receiver)
             obj.save()
