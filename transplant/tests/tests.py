@@ -1,13 +1,14 @@
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.conf import settings
 from django.contrib.auth.models import User
-from mock import Mock
-
+from django.test.client import RequestFactory
 from django.core.exceptions import ImproperlyConfigured
+from mock import Mock
 
 from .models import TestModel, CustomUserFieldNameModel
 from ..surgeons import NopSurgeon, DefaultSurgeon
 from ..surgery import Surgery
+from ..views import TransplantMergeView
 
 class AppPropertiesTest(TestCase):
     
@@ -98,12 +99,14 @@ class DefaultSurgeonTest(TestCase):
         for _ in range(0,10):
             TestModel(user=self.receiver).save()
         mock_list = [Mock(obj) for obj in TestModel.objects.all()]
+        old_method = TestModel.objects.all
         TestModel.objects.all = Mock(name='method')
         TestModel.objects.all.return_value = mock_list
         s = DefaultSurgeon(TestModel.objects)
         s.merge(self.receiver, self.donor)
         for mock in mock_list:
             mock.save.assert_called_with()
+        TestModel.objects.all = old_method
 
 class SurgeryTest(TestCase):
 
@@ -144,14 +147,14 @@ class SurgeryTest(TestCase):
     
     def testImproperlyConfiguredSouldBeRaisedIfModelCannotBeLoaded(self):
         with self.assertRaises(ImproperlyConfigured):
-            surgery = Surgery(
+            Surgery(
                 'non.existing.Model',
                 'transplant.surgeons.NopSurgeon'
             )
     
     def testImproperlyConfiguredShouldBeRaisedIfManagerDoesNotExtist(self):
         with self.assertRaises(ImproperlyConfigured):
-            surgery = Surgery(
+            Surgery(
                 'transplant.tests.models.TestModel',
                 'transplant.surgeons.DefaultSurgeon',
                 **{'manager': 'so_wrong'}
@@ -159,7 +162,120 @@ class SurgeryTest(TestCase):
     
     def testImproperlyConfiguredShouldBeRaisedIfSurgeonCannotBeLoaded(self):
         with self.assertRaises(ImproperlyConfigured):
-            surgery = Surgery(
+            Surgery(
                 'transplant.tests.models.TestModel',
                 'non.existing.Surgeon'
             )
+    
+    def testMergeShouldCallMergeOnSurgeon(self):
+        surgery = Surgery(
+            'transplant.tests.models.TestModel',
+            'transplant.surgeons.NopSurgeon',
+        )
+        surgery.surgeon = Mock(surgery.surgeon)
+        receiver = User.objects.create_user(username='receiver', password='pwd')
+        donor = User.objects.create_user(username='donor', password='pwd')
+        surgery.merge(receiver, donor)
+        surgery.surgeon.merge.assert_called_with(receiver, donor)
+
+class TransplantMergeViewTest(TransactionTestCase):
+    urls = 'transplant.urls'
+    
+    def setUp(self):
+        self.receiver = User.objects.create_user(username='receiver', password='p')
+        self.donor = User.objects.create_user(username='donor', password='p')
+        self.factory = RequestFactory()
+        
+        for i in range(0,10):
+            u = self.receiver if i % 2 == 0 else self.donor
+            TestModel(user=u).save()
+            CustomUserFieldNameModel(person=u).save()
+    
+    def testFormValidShouldPeformMergeIfUserCanAuthenticate(self):
+        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request.user = self.receiver
+        v = TransplantMergeView()
+        v.request = request
+        
+        with self.settings(
+            TRANSPLANT_OPERATIONS = (
+                ('transplant.tests.models.TestModel', 'transplant.surgeons.DefaultSurgeon', {}),
+            )
+        ):
+            form = v.form_class(request)
+            form.user_cache = self.donor
+            v.form_valid(form)
+            for m in TestModel.objects.all():
+                self.assertEquals(self.receiver, m.user)
+    
+    def testFormValidShouldRollackIfAnyExceptionOccurs(self):
+        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request.user = self.receiver
+        
+        with self.settings(
+            TRANSPLANT_OPERATIONS = (
+                ('transplant.tests.models.TestModel', 'transplant.surgeons.DefaultSurgeon', {}),
+                (
+                    'transplant.tests.models.CustomUserFieldNameModel',
+                    'transplant.tests.surgeons.FaultySurgeon',
+                    {'user_field': 'person'}
+                ),
+            )
+        ):
+            users_before_transaction = [m.user for m in TestModel.objects.all()]
+            with self.assertRaises(RuntimeError):
+                TransplantMergeView.as_view()(request)
+            users_after_transaction = [m.user for m in TestModel.objects.all()]
+            self.assertListEqual(users_before_transaction, users_after_transaction)
+    
+    def testExceptionReRaisedIfSettingsDebugIsTrue(self):
+        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request.user = self.receiver
+        
+        with self.settings(
+            TRANSPLANT_OPERATIONS = (
+                (
+                    'transplant.tests.models.TestModel',
+                    'transplant.tests.surgeons.FaultySurgeon',
+                    {'user_field': 'person'}
+                ),
+            ),
+            DEBUG = True
+        ):
+            with self.assertRaises(RuntimeError):
+                TransplantMergeView.as_view()(request)
+    
+    def testExceptionReRaisedIfFailureRedirectNotSet(self):
+        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request.user = self.receiver
+        
+        with self.settings(
+            TRANSPLANT_OPERATIONS = (
+                (
+                    'transplant.tests.models.TestModel',
+                    'transplant.tests.surgeons.FaultySurgeon',
+                    {'user_field': 'person'}
+                ),
+            ),
+            DEBUG = False
+        ):
+            with self.assertRaises(RuntimeError):
+                TransplantMergeView.as_view()(request)
+    
+    def testRedirectOnExceptionIfDebugFalseAndFailureRedirectSet(self):
+        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request.user = self.receiver
+        
+        with self.settings(
+            TRANSPLANT_OPERATIONS = (
+                (
+                    'transplant.tests.models.TestModel',
+                    'transplant.tests.surgeons.FaultySurgeon',
+                    {'user_field': 'person'}
+                ),
+            ),
+            TRANSPLANT_FAILURE_URL = 'http://www.example.org',
+            DEBUG = False
+        ):
+            response = TransplantMergeView.as_view()(request)
+        self.assertEquals(302, response.status_code)

@@ -51,3 +51,6 @@ class Surgery:
         classname = chunks.pop()
         modulepath = '.'.join(chunks)
         return (modulepath, classname)
+    
+    def merge(self, receiver, donor):
+        self.surgeon.merge(receiver, donor)
