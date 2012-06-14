@@ -17,5 +17,3 @@ for name in dir(app_settings):
         # Add the value to the settings, if not already present
         if not hasattr(user_settings, name):
                 setattr(user_settings, name, getattr(default_settings, name))
-
- 
