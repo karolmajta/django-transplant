@@ -20,7 +20,7 @@ Django-transplant requires:
 
 If you plan to develop, or run the test suite you should also install:
 
- - Mock
+- Mock
  
 This dependency **will not** be installed automatically via pip.
 
@@ -38,13 +38,11 @@ Configuration
 -------------
 
 Add ``'transplant'`` to your ``INSTALLED_APPS``. If you plan to run the test
-suite you should also add ``transplant.tests``.
+suite you should also add ``'transplant.tests'``.
 
-	INSTALLED_APPS = (
-		...
+	INSTALLED_APPS += (
 		'transplant',
 		'transplant.tests', # this is optional
-		...
 	)
 
 For your convenience django-transplant provides a default view for performing
@@ -53,11 +51,7 @@ User merges. You can use it like any FormView, and it's name is
 
 To hook it up just add it to your ``urlconf`` at any URL:
 
-	urplatterns = patterns('',
-		...
-		url(r'^accounts/merge/$', include('transplant.urls')),
-		...
-	)
+	urplatterns += patterns('', url(r'^accounts/merge/$', include('transplant.urls')))
 
 You should be now able to get the merge form and submit it, but it will have
 no effect. To utilize default merges you must set ``TRANSPLANT_OPERATIONS``
@@ -95,6 +89,7 @@ Currently supported extra arguments are:
   only messages accessible via the 'unread' manager will be merged.
   
 You may be happy with the behavior of ``DefaultSurgeon`` which is:
+
 	- set field given as 'user_field' to the user that performs the merge
 	- call save() on each entity (so that all signals are triggered)
 	- set the is_active to False on the user that is merged
