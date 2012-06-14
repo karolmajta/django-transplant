@@ -28,7 +28,7 @@ This dependency **will not** be installed automatically via pip.
 Installing
 ----------
 
-To install with pip issue:
+To install with pip issue::
 
 	pip install -e \
 	git+http://github.com/lolek09/django-transplant#egg=django-transplant
@@ -38,7 +38,7 @@ Configuration
 -------------
 
 Add ``'transplant'`` to your ``INSTALLED_APPS``. If you plan to run the test
-suite you should also add ``'transplant.tests'``.
+suite you should also add ``'transplant.tests'``::
 
 	INSTALLED_APPS += (
 		'transplant',
@@ -49,13 +49,17 @@ For your convenience django-transplant provides a default view for performing
 User merges. You can use it like any FormView, and it's name is
 ``transplant_merge``. It expects a default template in ``transplant/merge.html'.
 
-To hook it up just add it to your ``urlconf`` at any URL:
+To hook it up just add it to your ``urlconf`` at any URL::
 
-	urplatterns += patterns('', url(r'^accounts/merge/$', include('transplant.urls')))
+	urplatterns = patterns('',
+		...
+		url(r'^accounts/merge/$', include('transplant.urls')),
+		...
+	)
 
 You should be now able to get the merge form and submit it, but it will have
 no effect. To utilize default merges you must set ``TRANSPLANT_OPERATIONS``
-in your settings.py:
+in your settings.py::
 
 	TRANSPLANT_OPERATIONS = (
 	    (
@@ -90,9 +94,9 @@ Currently supported extra arguments are:
   
 You may be happy with the behavior of ``DefaultSurgeon`` which is:
 
-	- set field given as 'user_field' to the user that performs the merge
-	- call save() on each entity (so that all signals are triggered)
-	- set the is_active to False on the user that is merged
+- set field given as 'user_field' to the user that performs the merge
+- call save() on each entity (so that all signals are triggered)
+- set the is_active to False on the user that is merged
 
 If you want additional functionality consult the docs.
 
