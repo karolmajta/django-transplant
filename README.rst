@@ -47,7 +47,7 @@ suite you should also add ``'transplant.tests'``::
 
 For your convenience django-transplant provides a default view for performing
 User merges. You can use it like any FormView, and it's name is
-``transplant_merge``. It expects a default template in ``transplant/merge.html'.
+``transplant_merge``. It expects a default template in 'transplant/merge.html'.
 
 To hook it up just add it to your ``urlconf`` at any URL::
 
