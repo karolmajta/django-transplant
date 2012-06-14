@@ -27,3 +27,6 @@ nosetests.xml
 
 # Project specific
 .settings
+
+# Ignore egg-info
+*.egg-info
