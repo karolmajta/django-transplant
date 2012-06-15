@@ -30,3 +30,6 @@ nosetests.xml
 
 # Ignore egg-info
 *.egg-info
+
+# Ignore packaged distributions
+dist/
