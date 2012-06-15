@@ -41,3 +41,22 @@ class DefaultSurgeon(NopSurgeon):
         for obj in self.manager.filter(**kw):
             setattr(obj, self.user_field, receiver)
             obj.save()
+
+class BatchSurgeon(NopSurgeon):
+    '''
+    Merges two users just like DefaultSurgeon does but without calling
+    save on each instance.
+    '''
+    
+    def merge(self, receiver, donor):
+        if receiver is donor:
+            return
+        donor.is_active = False
+        donor.save()
+        
+        filter_kwargs = {'{0}'.format(self.user_field): donor}
+        update_kwargs = {'{0}'.format(self.user_field): receiver}
+        
+        self.manager.filter(**filter_kwargs).update(**update_kwargs)
+    
+    
