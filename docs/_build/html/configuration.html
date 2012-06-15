@@ -1,0 +1,206 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; django-transplant 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="django-transplant 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">django-transplant 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="configuring-installed-apps">
+<h2>Configuring INSTALLED_APPS<a class="headerlink" href="#configuring-installed-apps" title="Permalink to this headline">¶</a></h2>
+<p>Add &#8216;transplant&#8217; to your <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>. If you plan to run the test suite
+you should also add &#8216;transplant.tests&#8217;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">INSTALLED_APPS</span> <span class="o">+=</span> <span class="p">(</span>
+              <span class="s">&#39;transplant&#39;</span><span class="p">,</span>
+              <span class="s">&#39;transplant.tests&#39;</span><span class="p">,</span> <span class="c"># this is optional</span>
+      <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="hooking-up-default-urls">
+<h2>Hooking up default URLs<a class="headerlink" href="#hooking-up-default-urls" title="Permalink to this headline">¶</a></h2>
+<p>For your convenience django-transplant provides a default view for performing
+User merges. You can use it like any FormView, and it&#8217;s name is
+<tt class="docutils literal"><span class="pre">transplant_merge</span></tt>. It expects a default template in &#8216;transplant/merge.html&#8217;.</p>
+<p>To hook it up just add it to your <tt class="docutils literal"><span class="pre">urlconf</span></tt> at any URL:</p>
+<div class="highlight-python"><pre>urplatterns = patterns('',
+        ...
+        url(r'^accounts/merge/$', include('transplant.urls')),
+        ...
+)</pre>
+</div>
+</div>
+<div class="section" id="hooking-up-view-in-your-urls-py">
+<h2>Hooking up view in your urls.py<a class="headerlink" href="#hooking-up-view-in-your-urls-py" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">transplant.views.TransplantMergeView</span></tt> is a subclass of generic <tt class="docutils literal"><span class="pre">FormView</span></tt>
+so you can hook it directly to your urls. You can pass it&#8217;s arguments like you
+would to any other generic view:</p>
+<div class="highlight-python"><pre>...
+from django.contrib.auth.decorators import login_required
+
+from views import TransplantMergeView
+...
+
+urlpatterns = patterns('',
+    ...
+    url(r'^$',
+        login_required(TransplantMergeView.as_view(
+            template_name='custom/template/name.html')
+        ),
+        name='custom_name'
+    ),
+    ...
+)</pre>
+</div>
+</div>
+<div class="section" id="configuring-transplan-operations-in-your-settings-py">
+<h2>Configuring TRANSPLAN_OPERATIONS in your settings.py<a class="headerlink" href="#configuring-transplan-operations-in-your-settings-py" title="Permalink to this headline">¶</a></h2>
+<p>After setting URLs yous should be able to get the merge form and submit it,
+but it will have no effect. To utilize default merges you must set
+<tt class="docutils literal"><span class="pre">TRANSPLANT_OPERATIONS</span></tt> in your settings.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">TRANSPLANT_OPERATIONS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span>
+        <span class="s">&#39;transplant.tests.models.CustomProfile&#39;</span><span class="p">,</span>
+        <span class="s">&#39;transplant.surgeons.DefaultSurgeon&#39;</span><span class="p">,</span>
+        <span class="p">{}</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s">&#39;transplant.tests.models.Item&#39;</span><span class="p">,</span>
+        <span class="s">&#39;transplant.tests.surgeons.DefaultSurgeon&#39;</span><span class="p">,</span>
+        <span class="p">{</span><span class="s">&#39;user_field&#39;</span><span class="p">:</span> <span class="s">&#39;owner&#39;</span><span class="p">}</span>
+    <span class="p">),</span>
+    <span class="p">(</span>
+        <span class="s">&#39;transplant.tests.models.Message&#39;</span><span class="p">,</span>
+        <span class="s">&#39;transplant.tests.surgeons.DefaultSurgeon&#39;</span><span class="p">,</span>
+        <span class="p">{</span><span class="s">&#39;manager&#39;</span><span class="p">:</span> <span class="s">&#39;unread&#39;</span><span class="p">}</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">TRANSPLANT_OPERATIONS</span></tt> consists of triples, each one of them specifies:</p>
+<ol class="arabic simple">
+<li>Path to model class to be merged.</li>
+<li>Path to <tt class="docutils literal"><span class="pre">Surgeon</span></tt> class to be used during the merge.</li>
+<li>Extra arguments.</li>
+</ol>
+<p>Currently supported extra arguments are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">user_field</span></tt> - name of the user field that will be used by the Surgeon
+during the merge (defaults to &#8216;user&#8217;).</li>
+<li><tt class="docutils literal"><span class="pre">manager</span></tt> - name of Manager used during the merge. In the example above
+only messages accessible via the &#8216;unread&#8217; manager will be merged.</li>
+</ul>
+<p>You may be happy with the behavior of <tt class="docutils literal"><span class="pre">DefaultSurgeon</span></tt> which is:</p>
+<ul class="simple">
+<li>set field given as <tt class="docutils literal"><span class="pre">'user_field'</span></tt> to the user that performs the merge</li>
+<li>call <tt class="docutils literal"><span class="pre">save()</span></tt> on each entity (so that all signals are triggered)</li>
+<li>set the <tt class="docutils literal"><span class="pre">is_active</span></tt> to False on the user that is merged</li>
+</ul>
+<p>If you want additional functionality consult API docs.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
+<li><a class="reference internal" href="#configuring-installed-apps">Configuring INSTALLED_APPS</a></li>
+<li><a class="reference internal" href="#hooking-up-default-urls">Hooking up default URLs</a></li>
+<li><a class="reference internal" href="#hooking-up-view-in-your-urls-py">Hooking up view in your urls.py</a></li>
+<li><a class="reference internal" href="#configuring-transplan-operations-in-your-settings-py">Configuring TRANSPLAN_OPERATIONS in your settings.py</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/configuration.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">django-transplant 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Karol Majta.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
