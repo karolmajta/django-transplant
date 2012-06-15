@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from mock import Mock
 
 from .models import TestModel, CustomUserFieldNameModel
-from ..surgeons import NopSurgeon, DefaultSurgeon
+from ..surgeons import NopSurgeon, DefaultSurgeon, BatchSurgeon
 from ..surgery import Surgery
 from ..views import TransplantMergeView
 
@@ -58,7 +58,7 @@ class NopSurgeonTest(TestCase):
             s.merge(self.receiver, self.donor)
         except AttributeError:
             self.fail("Method merge is not implemented")
-
+            
 class DefaultSurgeonTest(TestCase):
     
     def setUp(self):
@@ -95,14 +95,6 @@ class DefaultSurgeonTest(TestCase):
         for testmodel in CustomUserFieldNameModel.objects.all():
             self.assertEquals(self.receiver, testmodel.person)
     
-    def testMergeShouldCallSaveOnEachMatchingObjectInManager(self):
-        for _ in range(0,10):
-            TestModel(user=self.donor).save()
-        s = DefaultSurgeon(TestModel.objects)
-        s.merge(self.receiver, self.donor)
-        for m in TestModel.objects.all():
-            self.assertTrue(m.was_saved)
-    
     def testMergeShouldNotTouchOtherUsersObjects(self):
         stranger = User.objects.create_user(username='s', password='p')
         for i in range(0,10):
@@ -118,6 +110,63 @@ class DefaultSurgeonTest(TestCase):
         s = DefaultSurgeon(TestModel.objects)
         s.merge(self.receiver, self.receiver)
         self.assertTrue(self.receiver.is_active)
+        
+    def testMergeShouldCallSaveOnEachMatchingObjectInManager(self):
+        for _ in range(0,10):
+            TestModel(user=self.donor).save()
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.donor)
+        for m in TestModel.objects.all():
+            self.assertTrue(m.was_saved)
+
+class BatchSurgeonTest(TestCase):
+    
+    def setUp(self):
+        self.receiver = User.objects.create_user(
+            username = 'receiver',
+            password = 'r'
+        )
+        self.donor = User.objects.create_user(
+            username = 'donor',
+            password = 'd'
+        )
+    
+    def testSameAccountMergeDoesNotDeactivateTheUser(self):
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.receiver)
+        self.assertTrue(self.receiver.is_active)
+    
+    def testMergeShoulNotCallSaveOnEachMatchingObjectInManager(self):
+        for _ in range(0,10):
+            TestModel(user=self.donor).save()
+        s = BatchSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.donor)
+        for m in TestModel.objects.all():
+            self.assertFalse(m.was_saved)
+    
+    def testMergeShouldSetDonorInactive(self):
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.donor)
+        self.assertTrue(self.receiver.is_active)
+        self.assertFalse(self.donor.is_active)
+    
+    def testMergeShouldSetUserOnAllObjectsFromManagerToReceiver(self):
+        for i in range(0,10):
+            u = self.receiver if i % 2 == 0 else self.donor
+            TestModel(user=u).save()
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.donor)
+        for testmodel in TestModel.objects.all():
+            self.assertEquals(self.receiver, testmodel.user)
+    
+    def testMergeShouldWorkIfUserFieldHasCustomName(self):
+        for i in range(0, 10):
+            u = self.receiver if i % 2 == 0 else self.donor
+            CustomUserFieldNameModel(person=u).save()
+        s = DefaultSurgeon(CustomUserFieldNameModel.objects, user_field='person')
+        s.merge(self.receiver, self.donor)
+        for testmodel in CustomUserFieldNameModel.objects.all():
+            self.assertEquals(self.receiver, testmodel.person)
 
 class SurgeryTest(TestCase):
 

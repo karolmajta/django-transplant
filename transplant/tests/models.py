@@ -12,7 +12,7 @@ class TestModel(models.Model):
     was_saved = models.BooleanField(default=False)
     
     def save(self, force_insert=False, force_update=False, using=None):
-        self.was_saved = True
+        self.was_saved = True if self.pk is not None else False
         super(TestModel, self).save(force_insert=force_insert, force_update=force_update, using=using)
         
 
