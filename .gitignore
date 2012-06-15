@@ -37,9 +37,6 @@ docs/_build/doctrees/
 # Ignore sources attached to html docs
 docs/_build/html/_sources/
 
-# Ignore staticfiles in build html
-docs/_build/html/_static/
-
 # Ignore docs  templates
 docs/_templates/
 
