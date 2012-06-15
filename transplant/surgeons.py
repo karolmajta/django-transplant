@@ -32,6 +32,8 @@ class DefaultSurgeon(NopSurgeon):
         Iterates over given manager and changes 'user_field' field value
         to self.receiver. Calls save on each objects separately.
         '''
+        if receiver is donor:
+            return
         donor.is_active = False
         donor.save()
         

@@ -113,6 +113,11 @@ class DefaultSurgeonTest(TestCase):
         s = DefaultSurgeon(TestModel.objects)
         s.merge(self.receiver, self.donor)
         self.assertEquals(5, TestModel.objects.filter(user=stranger).count())
+    
+    def testSameAccountMergeDoesNotDeactivateTheUser(self):
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.receiver)
+        self.assertTrue(self.receiver.is_active)
 
 class SurgeryTest(TestCase):
 
