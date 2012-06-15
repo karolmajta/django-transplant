@@ -28,7 +28,11 @@ This dependency **will not** be installed automatically via pip.
 Installing
 ----------
 
-To install with pip issue::
+To install with pip into site-packages issue::
+
+	pip install django-transplant
+
+To install with pip into src folder (as git repo) issue::
 
 	pip install -e \
 	git+http://github.com/lolek09/django-transplant#egg=django-transplant

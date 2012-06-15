@@ -56,7 +56,7 @@ would to any other generic view::
   )
 
 ----------------------------------------------------
-Configuring TRANSPLAN_OPERATIONS in your settings.py
+Configuring TRANSPLANT_OPERATIONS in your settings.py
 ----------------------------------------------------
 
 After setting URLs yous should be able to get the merge form and submit it,
@@ -101,3 +101,25 @@ You may be happy with the behavior of ``DefaultSurgeon`` which is:
 - set the ``is_active`` to False on the user that is merged
 
 If you want additional functionality consult API docs.
+
+------------------
+Available settings
+------------------
+
+Currently available settings are:
+
+``TRANSPLANT_OPERATIONS``
+  Allows for specification of operations to be performed during automated
+  user merge. Widely discussed above.
+
+``TRANSPLANT_SUCCESS_URL``
+  Allows fot specification of URL that the user will be redirected to after
+  successfull account merge. Defaults to ``LOGIN_REDIRECT_URL``
+
+``TRANSPLANT_FAILURE_URL``
+  When ``Debug`` is set to ``True`` this setting takes no effect and
+  ``TransplantMergeView`` will re-raise any exception. When ``Debug``
+  is set to ``True`` instead of raising an error, the view will redirect
+  to provided URL. If you want it to raise error anyway set
+  ``TRANSPLANT_FAILURE_URL`` to ``None``. This is the default value.
+

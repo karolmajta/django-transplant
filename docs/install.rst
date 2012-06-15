@@ -31,5 +31,4 @@ Installing
 
 To install with pip issue::
 
-  pip install -e \
-  git+http://github.com/lolek09/django-transplant#egg=django-transplant
+  pip install django-transplant

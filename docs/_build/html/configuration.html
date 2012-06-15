@@ -97,8 +97,8 @@ urlpatterns = patterns('',
 )</pre>
 </div>
 </div>
-<div class="section" id="configuring-transplan-operations-in-your-settings-py">
-<h2>Configuring TRANSPLAN_OPERATIONS in your settings.py<a class="headerlink" href="#configuring-transplan-operations-in-your-settings-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuring-transplant-operations-in-your-settings-py">
+<h2>Configuring TRANSPLANT_OPERATIONS in your settings.py<a class="headerlink" href="#configuring-transplant-operations-in-your-settings-py" title="Permalink to this headline">¶</a></h2>
 <p>After setting URLs yous should be able to get the merge form and submit it,
 but it will have no effect. To utilize default merges you must set
 <tt class="docutils literal"><span class="pre">TRANSPLANT_OPERATIONS</span></tt> in your settings.py:</p>
@@ -142,6 +142,24 @@ only messages accessible via the &#8216;unread&#8217; manager will be merged.</l
 </ul>
 <p>If you want additional functionality consult API docs.</p>
 </div>
+<div class="section" id="available-settings">
+<h2>Available settings<a class="headerlink" href="#available-settings" title="Permalink to this headline">¶</a></h2>
+<p>Currently available settings are:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">TRANSPLANT_OPERATIONS</span></tt></dt>
+<dd>Allows for specification of operations to be performed during automated
+user merge. Widely discussed above.</dd>
+<dt><tt class="docutils literal"><span class="pre">TRANSPLANT_SUCCESS_URL</span></tt></dt>
+<dd>Allows fot specification of URL that the user will be redirected to after
+successfull account merge. Defaults to <tt class="docutils literal"><span class="pre">LOGIN_REDIRECT_URL</span></tt></dd>
+<dt><tt class="docutils literal"><span class="pre">TRANSPLANT_FAILURE_URL</span></tt></dt>
+<dd>When <tt class="docutils literal"><span class="pre">Debug</span></tt> is set to <tt class="docutils literal"><span class="pre">True</span></tt> this setting takes no effect and
+<tt class="docutils literal"><span class="pre">TransplantMergeView</span></tt> will re-raise any exception. When <tt class="docutils literal"><span class="pre">Debug</span></tt>
+is set to <tt class="docutils literal"><span class="pre">True</span></tt> instead of raising an error, the view will redirect
+to provided URL. If you want it to raise error anyway set
+<tt class="docutils literal"><span class="pre">TRANSPLANT_FAILURE_URL</span></tt> to <tt class="docutils literal"><span class="pre">None</span></tt>. This is the default value.</dd>
+</dl>
+</div>
 </div>
 
 
@@ -156,7 +174,8 @@ only messages accessible via the &#8216;unread&#8217; manager will be merged.</l
 <li><a class="reference internal" href="#configuring-installed-apps">Configuring INSTALLED_APPS</a></li>
 <li><a class="reference internal" href="#hooking-up-default-urls">Hooking up default URLs</a></li>
 <li><a class="reference internal" href="#hooking-up-view-in-your-urls-py">Hooking up view in your urls.py</a></li>
-<li><a class="reference internal" href="#configuring-transplan-operations-in-your-settings-py">Configuring TRANSPLAN_OPERATIONS in your settings.py</a></li>
+<li><a class="reference internal" href="#configuring-transplant-operations-in-your-settings-py">Configuring TRANSPLANT_OPERATIONS in your settings.py</a></li>
+<li><a class="reference internal" href="#available-settings">Available settings</a></li>
 </ul>
 </li>
 </ul>
