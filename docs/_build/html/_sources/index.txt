@@ -10,6 +10,11 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   
+   about
+   install
+   configuration
+   api
 
 
 
