@@ -35,6 +35,7 @@ class DefaultSurgeon(NopSurgeon):
         donor.is_active = False
         donor.save()
         
-        for obj in self.manager.all():
+        kw = {'{0}'.format(self.user_field): donor}
+        for obj in self.manager.filter(**kw):
             setattr(obj, self.user_field, receiver)
             obj.save()

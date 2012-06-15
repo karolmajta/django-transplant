@@ -95,18 +95,24 @@ class DefaultSurgeonTest(TestCase):
         for testmodel in CustomUserFieldNameModel.objects.all():
             self.assertEquals(self.receiver, testmodel.person)
     
-    def testMergeShouldCallSaveOnEachObjectInManager(self):
+    def testMergeShouldCallSaveOnEachMatchingObjectInManager(self):
         for _ in range(0,10):
-            TestModel(user=self.receiver).save()
-        mock_list = [Mock(obj) for obj in TestModel.objects.all()]
-        old_method = TestModel.objects.all
-        TestModel.objects.all = Mock(name='method')
-        TestModel.objects.all.return_value = mock_list
+            TestModel(user=self.donor).save()
         s = DefaultSurgeon(TestModel.objects)
         s.merge(self.receiver, self.donor)
-        for mock in mock_list:
-            mock.save.assert_called_with()
-        TestModel.objects.all = old_method
+        for m in TestModel.objects.all():
+            self.assertTrue(m.was_saved)
+    
+    def testMergeShouldNotTouchOtherUsersObjects(self):
+        stranger = User.objects.create_user(username='s', password='p')
+        for i in range(0,10):
+            u = self.receiver if i % 2 == 0 else self.donor
+            TestModel(user=u).save()
+        for _ in range(0,5):
+            TestModel(user=stranger).save()
+        s = DefaultSurgeon(TestModel.objects)
+        s.merge(self.receiver, self.donor)
+        self.assertEquals(5, TestModel.objects.filter(user=stranger).count())
 
 class SurgeryTest(TestCase):
 

@@ -9,6 +9,12 @@ class TestModel(models.Model):
     other_manager = OtherManager()
 
     user = models.ForeignKey(User)
+    was_saved = models.BooleanField(default=False)
+    
+    def save(self, force_insert=False, force_update=False, using=None):
+        self.was_saved = True
+        super(TestModel, self).save(force_insert=force_insert, force_update=force_update, using=using)
+        
 
 class CustomUserFieldNameModel(models.Model):
     person = models.ForeignKey(User)
