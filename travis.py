@@ -1,21 +1,11 @@
 import os
 import sys
-import argparse
 from django.conf import settings
 from django.core.management import call_command
  
 
-class QuickDjangoTest(object):
-    """
-    A quick way to run the Django test suite without a fully-configured project.
-
-    Example usage:
-
-        >>> QuickDjangoTest('app1', 'app2')
-
-    Based on a script published by Lukasz Dziedzia at: 
-    http://stackoverflow.com/questions/3841725/how-to-launch-tests-for-django-reusable-app
-    """
+class TravisTest(object):
+    
     DIRNAME = os.path.dirname(__file__)
     INSTALLED_APPS = (
         'django.contrib.auth',
@@ -49,11 +39,11 @@ class QuickDjangoTest(object):
             INSTALLED_APPS = self.INSTALLED_APPS + self.apps,
             ROOT_URLCONF = 'transplant.urls'
         )
-        call_command('syncdb')
+        call_command('syncdb', interactive=False)
         from django.test.simple import DjangoTestSuiteRunner
         failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
         if failures:
             sys.exit(failures)
 
 if __name__ == '__main__':
-    QuickDjangoTest('transplant')
+    TravisTest('transplant')
