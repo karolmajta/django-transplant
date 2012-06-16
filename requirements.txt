@@ -1,1 +1,6 @@
-django>=1.2.5
+Django==1.4
+South==0.7.5
+argparse==1.2.1
+-e git://github.com/howiworkdaily/django-faq.git@f5a5cc9ad4b090529ba138590de776e48e47609c#egg=django_faq-dev
+mock==0.8.0
+wsgiref==0.1.2
