@@ -5,4 +5,4 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - pip install .
 script:
-  - python travis.py
+  - python run_tests.py

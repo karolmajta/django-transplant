@@ -1,12 +1,9 @@
-import os
 import sys
 from django.conf import settings
-from django.core.management import call_command
  
 
-class TravisTest(object):
+class StandaloneTestSuite(object):
     
-    DIRNAME = os.path.dirname(__file__)
     INSTALLED_APPS = (
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -18,9 +15,8 @@ class TravisTest(object):
 
     def __init__(self, *args, **kwargs):
         self.apps = args
-        self._new_tests()
 
-    def _new_tests(self):
+    def run_tests(self):
         """
         Fire up the Django test suite developed for version 1.2
         """
@@ -39,11 +35,10 @@ class TravisTest(object):
             INSTALLED_APPS = self.INSTALLED_APPS + self.apps,
             ROOT_URLCONF = 'transplant.urls'
         )
-        call_command('syncdb', interactive=False)
         from django.test.simple import DjangoTestSuiteRunner
         failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
         if failures:
             sys.exit(failures)
 
 if __name__ == '__main__':
-    TravisTest('transplant')
+    StandaloneTestSuite('transplant').run_tests()
