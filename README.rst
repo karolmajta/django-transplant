@@ -2,6 +2,8 @@
 django-transplant
 =================
 
+"!https://secure.travis-ci.org/lolek09/django-transplant.png!":http://travis-ci.org/lolek09/django-transplant
+
 --------
 Overview
 --------
