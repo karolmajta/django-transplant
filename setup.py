@@ -23,7 +23,7 @@ def long_description():
         return LONG_DESCRIPTION
 
 setup(name='django-transplant',
-      version='0.0.1',
+      version='0.0.2',
       author='Karol Majta',
       author_email='karolmajta@gmail.com',
       description='Automated merges of User accounts.',

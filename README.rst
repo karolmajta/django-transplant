@@ -110,3 +110,25 @@ Documentation
 
 Documentation is available at
 `http://django-transplant.readthedocs.org/ <http://django-transplant.readthedocs.org/>`_
+
+---------
+Changelog
+---------
+
+-----
+0.0.2
+-----
+
+  - Addidional Surgeon class BatchSurgeon pefrorming batch updates
+  - Added UserMergeForm used by default by provided view
+
+-----
+0.0.1
+-----
+
+  - Surgery class
+  - Surgeon classes
+    - NopSurgeon class that does basically nothing
+    - DefaultSurgeon class for default merging behavior
+  - Default view provide for convenience
+  - Urls provided for conveniene
