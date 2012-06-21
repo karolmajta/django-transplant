@@ -269,7 +269,9 @@ class TransplantMergeViewTest(TransactionTestCase):
                 self.assertEquals(self.receiver, m.user)
     
     def testFormValidShouldRollackIfAnyExceptionOccurs(self):
-        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request = self.factory.post('/',
+          {'merge-username': 'donor', 'merge-password': 'p', 'merge-warning_accepted': 'True'}
+        )
         request.user = self.receiver
         
         with self.settings(
@@ -283,13 +285,15 @@ class TransplantMergeViewTest(TransactionTestCase):
             )
         ):
             users_before_transaction = [m.user for m in TestModel.objects.all()]
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(Exception):
                 TransplantMergeView.as_view()(request)
             users_after_transaction = [m.user for m in TestModel.objects.all()]
             self.assertListEqual(users_before_transaction, users_after_transaction)
     
     def testExceptionReRaisedIfSettingsDebugIsTrue(self):
-        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request = self.factory.post('/',
+          {'merge-username': 'donor', 'merge-password': 'p', 'merge-warning_accepted': 'True'}
+        )
         request.user = self.receiver
         
         with self.settings(
@@ -302,11 +306,13 @@ class TransplantMergeViewTest(TransactionTestCase):
             ),
             DEBUG = True
         ):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(Exception):
                 TransplantMergeView.as_view()(request)
     
     def testExceptionReRaisedIfFailureRedirectNotSet(self):
-        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request = self.factory.post('/',
+          {'merge-username': 'donor', 'merge-password': 'p', 'merge-warning_accepted': 'True'}
+        )
         request.user = self.receiver
         
         with self.settings(
@@ -319,11 +325,13 @@ class TransplantMergeViewTest(TransactionTestCase):
             ),
             DEBUG = False
         ):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(Exception):
                 TransplantMergeView.as_view()(request)
     
     def testRedirectOnExceptionIfDebugFalseAndFailureRedirectSet(self):
-        request = self.factory.post('/', {'username': 'donor', 'password': 'p'})
+        request = self.factory.post('/',
+          {'merge-username': 'donor', 'merge-password': 'p', 'merge-warning_accepted': 'True'}
+        )
         request.user = self.receiver
         
         with self.settings(
